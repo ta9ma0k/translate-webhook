@@ -16,3 +16,17 @@ export const getBlog = (contentId: string): Promise<Blog> => {
     contentId
   })
 }
+
+export const postEnBlog = async (contentId: string, title: string, content: string): Promise<string> => {
+  const response = await client.create({ 
+    endpoint: 'en-blogs',
+    contentId,
+    content: {
+      title,
+      content,
+      blog_id: contentId
+    },
+  })
+
+  return response.id
+}
