@@ -6,6 +6,50 @@ const serverlessConfiguration: AWS = {
   service: 'translate-webhook',
   frameworkVersion: '3',
   plugins: ['serverless-esbuild'],
+  resources: {
+    Resources: {
+      TranslateLambdaRole: {
+        Type: 'AWS::IAM::Role',
+        Properties: {
+          RoleName: 'translate-lambda-role',
+          AssumeRolePolicyDocument: {
+            Version: '2012-10-17',
+            Statement: [
+              {
+                Effect: 'Allow',
+                Principal: {
+                  Service: ['lambda.amazonaws.com']
+                },
+                Action: ['sts:AssumeRole']
+              }
+            ]
+          },
+          ManagedPolicyArns: [
+            'arn:aws:iam::${aws:accountId}:policy/translate-lambda-managed-policy',
+            'arn:aws:iam::aws:policy/TranslateReadOnly'
+          ]
+        },
+        DependsOn: ['TranslateLambdaManagedPolicy']
+      },
+      TranslateLambdaManagedPolicy: {
+        Type: 'AWS::IAM::ManagedPolicy',
+        Properties: {
+          ManagedPolicyName: 'translate-lambda-managed-policy',
+          PolicyDocument: {
+            Version: '2012-10-17',
+            Statement: [
+              {
+                Sid: 'log',
+                Effect: 'Allow',
+                Action: ['logs:CreateLogStream', 'logs:CreateLogGroup', 'logs:PutLogEvents'],
+                Resource: 'arn:aws:logs:${aws:region}:${aws:accountId}:log-group:/aws/lambda/translate-webhook-dev-translate:*'
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
   provider: {
     name: 'aws',
     runtime: 'nodejs18.x',
@@ -18,6 +62,7 @@ const serverlessConfiguration: AWS = {
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
     },
     region: 'ap-northeast-1',
+    role: 'TranslateLambdaRole'
   },
   // import the function via paths
   functions: { translate },
