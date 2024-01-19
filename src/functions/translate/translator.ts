@@ -1,17 +1,21 @@
-import { TranslateClient, TranslateTextCommand } from "@aws-sdk/client-translate"
+import { TranslationServiceClient } from "@google-cloud/translate"
+import {GoogleAuth} from "google-auth-library";
 
-const client = new TranslateClient({ region: 'ap-northeast-1' })
+const projectId = process.env.GOOGLE_CLOUD_PROJECT;
+const location = 'global';
 
+const auth = new GoogleAuth({
+  scopes: 'https://www.googleapis.com/auth/cloud-translation'
+})
+const translateClient = new TranslationServiceClient({ auth })
 export const translateText = async (text: string): Promise<string> => {
-  const command = new TranslateTextCommand({
-    Text: text,
-    SourceLanguageCode: 'ja',
-    TargetLanguageCode: 'en'
-  })
-  try {
-    const response = await client.send(command)
-    return response.TranslatedText ?? Promise.reject()
-  } catch (err) {
-    return Promise.reject(err)
+  const request = {
+    parent: translateClient.locationPath(projectId, location),
+    contents: [text],
+    mimeType: 'text/html',
+    sourceLanguageCode: 'ja',
+    targetLanguageCode: 'en'
   }
+  const [response] = await translateClient.translateText(request)
+  return response.translations[0].translatedText
 }

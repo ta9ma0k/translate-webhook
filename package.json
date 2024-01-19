@@ -12,6 +12,7 @@
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.491.0",
     "@aws-sdk/client-translate": "^3.490.0",
+    "@google-cloud/translate": "^8.0.3",
     "@middy/core": "^3.4.0",
     "@middy/http-json-body-parser": "^3.4.0",
     "microcms-js-sdk": "^2.7.0"
